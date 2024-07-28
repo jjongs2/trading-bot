@@ -1,0 +1,9 @@
+line-length = 79
+target-version = 'py312'
+
+[lint]
+select = ['E', 'F']
+
+[format]
+line-ending = 'lf'
+quote-style = 'single'
