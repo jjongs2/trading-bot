@@ -17,7 +17,9 @@ class Fetcher:
         self._symbol = symbol
 
     def fetch_symbol_info(self) -> dict:
-        logger.info('Fetching symbol information...')
+        logger.info(
+            f'Fetching symbol information from {self._exchange.name}...'
+        )
         try:
             markets = self._exchange.load_markets()
             symbol_info = markets[self._symbol]
@@ -33,7 +35,7 @@ class Fetcher:
         start_time: str | None,
         limit: int | None,
     ) -> pd.Series:
-        logger.info(f'Fetching historical data from {self._exchange.name}...')
+        logger.info('Fetching historical data...')
         try:
             total_data = []
             since = self._exchange.parse8601(start_time)
