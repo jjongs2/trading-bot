@@ -33,6 +33,8 @@ def lambda_handler(event, context):
             'statusCode': 200,
             'body': dumps('OK'),
         }
+    except ccxt.NetworkError:
+        raise
     except Exception as e:
         logger.exception(f'Exception raised in lambda_handler: {e}')
         return {
