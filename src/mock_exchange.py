@@ -133,5 +133,5 @@ class MockExchange(exchange_class):
             'P&L ratio': f'{pnl_ratio:.2f}',
             'Max profit rate (per trade)': f'{max_profit_rate:.1%}',
             'Max loss rate (per trade)': f'{max_loss_rate:.1%}',
-            'Final balance': f"{df['balance'].iloc[-1]:.2f}",
+            'Final balance': f"{df['balance'].iloc[-1]:.1f}",
         }

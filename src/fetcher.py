@@ -89,7 +89,7 @@ class Fetcher:
             margin_asset = symbol_info['settle']
             account_info = self._exchange.fetch_balance()
             balance = account_info['total'][margin_asset]
-            logger.info(f'Account balance: {balance} {margin_asset}')
+            logger.info(f'Account balance: {balance:.1f} {margin_asset}')
             return balance
         except Exception as e:
             logger.error(f'Failed to fetch account balance: {e}')
