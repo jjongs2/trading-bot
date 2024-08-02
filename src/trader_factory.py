@@ -1,3 +1,5 @@
+"""Define a factory function for creating Trader instances."""
+
 import ccxt
 from mypy_boto3_s3 import S3Client
 
@@ -17,6 +19,25 @@ def create_trader(
     exchange: ccxt.Exchange,
     config: Config = Config(),
 ) -> Trader:
+    """Create and return a configured Trader instance.
+
+    Initialize all the components needed for the trading system and
+    combine them into a Trader instance.
+
+    Args:
+        s3_client:
+            An (Mock)S3Client for loading the model and scaler.
+        exchange:
+            An ccxt.Exchange instance for interacting with the exchange.
+        config:
+            A Config instance containing configuration parameters.
+
+    Returns:
+        A configured Trader instance ready for executing trades.
+
+    Raises:
+        Exception: Not enough historical data for prediction.
+    """
     position = Position()
     strategy = MyStrategy(config.THRESHOLD, config.STOP_LOSS)
 

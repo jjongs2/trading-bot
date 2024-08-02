@@ -1,3 +1,11 @@
+"""Define a Trader class that encapsulates the core logic for trades.
+
+Typical usage example:
+
+    trader = create_trader(s3_client, exchange)
+    trader.execute_trade()
+"""
+
 from logging import getLogger
 
 import numpy as np
@@ -14,6 +22,14 @@ logger = getLogger(__name__)
 
 
 class Trader:
+    """Execute the trading strategy.
+
+    Designed to work with historical data and predicted prices, using a
+    specified strategy to determine when to open or close a position.
+    Interact with an exchange through Fetcher and Orderer to retrieve
+    market data and place orders.
+    """
+
     def __init__(
         self,
         config: Config,
@@ -25,6 +41,18 @@ class Trader:
         historical_data: pd.Series,
         predicted_data: np.ndarray,
     ) -> None:
+        """Initialize the instance with necessary components and data.
+
+        Args:
+            config: A Config object containing trade parameters.
+            fetcher: A Fetcher object for retrieving market data.
+            orderer: An Orderer object for placing trade orders.
+            position: A Position object representing the position.
+            strategy: A Strategy object for making trade decisions.
+            symbol_info: A dict containing symbol information.
+            historical_data: A pandas Series of historical price data.
+            predicted_data: A numpy array of predicted price data.
+        """
         self._config = config
         self._fetcher = fetcher
         self._orderer = orderer
@@ -35,6 +63,17 @@ class Trader:
         self._predicted_data = predicted_data
 
     def execute_trade(self, time_index: int = -1) -> None:
+        """Execute a single trade decision.
+
+        Evaluate the current market conditions using the specified
+        strategy. Either open a new position, close an existing
+        position, or do nothing based on the strategy's decision.
+
+        Args:
+            time_index:
+                An integer representing the current time index of the
+                historical and predicted data. Defaults to -1 (latest).
+        """
         self._fetcher.fetch_position(self._symbol_info, self._position)
         current_price = self._historical_data.iloc[time_index].item()
         predicted_price = self._predicted_data.item(time_index)
@@ -53,6 +92,12 @@ class Trader:
         current_price: float,
         predicted_price: float,
     ) -> None:
+        """Open a new position if the strategy suggests.
+
+        Args:
+            current_price: The current price of the base asset.
+            predicted_price: The predicted next price of the base asset.
+        """
         logger.info('Evaluating whether to open position...')
         if self._strategy.should_open_position(current_price, predicted_price):
             side = Side.BUY if current_price < predicted_price else Side.SELL
@@ -62,6 +107,12 @@ class Trader:
             logger.info('Conditions not met to open position')
 
     def _open_position(self, side: Side, current_price: float) -> None:
+        """Open a new position with the specified side and price.
+
+        Args:
+            side: The side of the position to open.
+            current_price: The current price of the base asset.
+        """
         balance = self._fetcher.fetch_account_balance(self._symbol_info)
         amount_precision = self._symbol_info['precision']['amount']
         amount = round(
@@ -78,6 +129,12 @@ class Trader:
         current_price: float,
         predicted_price: float,
     ) -> None:
+        """Close the current position if the strategy suggests.
+
+        Args:
+            current_price: The current price of the base asset.
+            predicted_price: The predicted next price of the base asset.
+        """
         logger.info(
             f'Evaluating whether to close {self._position.side} position...'
         )
@@ -90,6 +147,11 @@ class Trader:
             logger.info('Conditions not met to close position')
 
     def _close_position(self, current_price: float) -> None:
+        """Close the current position at the specified price.
+
+        Args:
+            current_price: The current price of the base asset.
+        """
         side = self._position.inverse()
         amount = self._position.amount
         self._orderer.place_order(side, amount, current_price)

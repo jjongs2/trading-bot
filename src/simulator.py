@@ -1,3 +1,5 @@
+"""Define a Simulator class for backtesting trading strategies."""
+
 import logging
 
 from tabulate import tabulate
@@ -10,15 +12,36 @@ logging.basicConfig(level='WARNING')
 
 
 class Simulator:
+    """Simulate trading strategies.
+
+    Set up a simulated trading environment. Provide methods to run
+    simulations and evaluate the results.
+    """
+
     def __init__(self):
+        """Initialize the instance with a mock exchange and a trader."""
         self._exchange = MockExchange()
         self._trader = create_trader(MockS3Client(), self._exchange)
 
     def run(self):
+        """Run trade simulations.
+
+        Simulate the trading process by iterating over historical data
+        from the mock exchange, calling Trader's execute_trade method at
+        each time step.
+        """
         while (time_index := self._exchange.next()) is not None:
             self._trader.execute_trade(time_index)
 
     def evaluate(self):
+        """Evaluate the performance of the trading strategy.
+
+        Call MockExchange's pnl_analysis method to generate performance
+        metrics for the simulated trading session.
+
+        Returns:
+            A dict containing various metrics.
+        """
         return self._exchange.pnl_analysis()
 
 

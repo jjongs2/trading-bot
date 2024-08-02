@@ -1,3 +1,13 @@
+"""Define a Fetcher class that interacts with a crypto exchange.
+
+Typical usage example:
+
+    exchange = ccxt.binanceusdm()
+    fetcher = Fetcher(exchange, 'BTC/USDT:USDT')
+    symbol_info = fetcher.fetch_symbol_info()
+    data = fetcher.fetch_historical_data(interval='1d', limit=15)
+"""
+
 from logging import getLogger
 
 import ccxt
@@ -12,11 +22,31 @@ logger = getLogger(__name__)
 
 
 class Fetcher:
+    """Fetch data from a crypto exchange.
+
+    Provide methods to retrieve various types of data from the exchange.
+    Designed to work with ccxt library.
+    """
+
     def __init__(self, exchange: ccxt.Exchange, symbol: str) -> None:
+        """Initialize the instance with an exchange and a symbol.
+
+        Args:
+            exchange: A ccxt.Exchange instance for the target exchange.
+            symbol: The trading symbol to fetch data for.
+        """
         self._exchange = exchange
         self._symbol = symbol
 
     def fetch_symbol_info(self) -> dict:
+        """Fetch information about the trading symbol.
+
+        Returns:
+            A dict containing information about the trading symbol.
+
+        Raises:
+            Exception: An error occurred fetching symbol information.
+        """
         logger.info(
             f'Fetching symbol information from {self._exchange.name}...'
         )
@@ -35,6 +65,19 @@ class Fetcher:
         start_time: str | None,
         limit: int | None,
     ) -> pd.Series:
+        """Fetch historical price data for the symbol.
+
+        Args:
+            interval: The time interval for the data.
+            start_time: The start time for the data in ISO 8601 format.
+            limit: The maximum number of data to fetch.
+
+        Returns:
+            A pandas Series containing closing prices.
+
+        Raises:
+            Exception: An error occurred fetching historical data.
+        """
         logger.info('Fetching historical data...')
         try:
             total_data = []
@@ -61,6 +104,15 @@ class Fetcher:
             raise
 
     def fetch_position(self, symbol_info: dict, my_position: Position) -> None:
+        """Fetch the position for the symbol and update Position object.
+
+        Args:
+            symbol_info: A dict containing symbol information.
+            my_position: A Position object to update with fetched data.
+
+        Raises:
+            Exception: An error occurred fetching position information.
+        """
         logger.info('Fetching position information...')
         try:
             positions = self._exchange.fetch_positions(symbols=[self._symbol])
@@ -84,6 +136,17 @@ class Fetcher:
             raise
 
     def fetch_account_balance(self, symbol_info: dict) -> float:
+        """Fetch the account balance for the symbol's margin asset.
+
+        Args:
+            symbol_info: A dict containing symbol information.
+
+        Returns:
+            The account balance for the margin asset.
+
+        Raises:
+            Exception: An error occurred fetching account balance.
+        """
         logger.info('Fetching account balance...')
         try:
             margin_asset = symbol_info['settle']

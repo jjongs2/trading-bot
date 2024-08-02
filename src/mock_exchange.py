@@ -1,3 +1,5 @@
+"""Define a MockExchange class that simulates a crypto exchange."""
+
 from math import inf
 
 import ccxt
@@ -13,9 +15,20 @@ exchange_class = getattr(ccxt, config.EXCHANGE_ID)
 
 
 class MockExchange(exchange_class):
+    """Simulate a crypto exchange for backtesting.
+
+    Inherit from the real exchange class and override key methods of the
+    real exchange to provide simulated behavior. Maintain internal
+    states for realistic simulation of trading scenarios.
+
+    Attributes:
+        INITIAL_BALANCE: The initial balance for the simulated account.
+    """
+
     INITIAL_BALANCE = 1000
 
     def __init__(self, *args, **kwargs) -> None:
+        """Initialize the instance with default values."""
         super().__init__(*args, **kwargs)
         self._balance = self.INITIAL_BALANCE
         self._historical_data = None
@@ -26,6 +39,7 @@ class MockExchange(exchange_class):
         self._transaction_fee = 0
 
     def cancel_all_orders(self, *args, **kwargs) -> list:
+        """Do nothing."""
         pass
 
     def create_order(
@@ -36,6 +50,16 @@ class MockExchange(exchange_class):
         *args,
         **kwargs,
     ) -> dict:
+        """Simulate creating an order and update internal states.
+
+        Args:
+            side: The side of the order.
+            amount: The amount of the base asset to trade.
+            price: The price to trade at.
+
+        Returns:
+            A dict containing the details of the simulated order.
+        """
         sign = side.sign()
         notional = amount * price
         self._balance -= sign * notional * (1 + self._transaction_fee)
@@ -65,9 +89,21 @@ class MockExchange(exchange_class):
         }
 
     def fetch_balance(self, *args, **kwargs) -> dict:
+        """Simulate fetching an account balance.
+
+        Returns:
+            A dict containing the simulated account balance.
+        """
         return {'total': {self._margin_asset: self._balance}}
 
     def fetch_ohlcv(self, *args, **kwargs) -> list:
+        """Fetch OHLCV(Open, High, Low, Close, Volume) data.
+
+        Update internal historical data and return actual OHLCV data.
+
+        Returns:
+            A list of lists containing the actual OHLCV data.
+        """
         data = super().fetch_ohlcv(*args, **kwargs)
         df = pd.DataFrame(data=data, columns=OHLCV_COLUMNS)
         df['time'] = pd.to_datetime(
@@ -84,6 +120,12 @@ class MockExchange(exchange_class):
         return data
 
     def fetch_positions(self, *args, **kwargs) -> list:
+        """Simulate fetching the current position.
+
+        Returns:
+            A list containing the current position, or an empty list if
+            there's no position.
+        """
         if self._position.is_none():
             return []
         return [
@@ -95,6 +137,11 @@ class MockExchange(exchange_class):
         ]
 
     def load_markets(self, *args, **kwargs) -> dict:
+        """Load actual market data and set internal parameters.
+
+        Returns:
+            A dict containing actual market data.
+        """
         markets = super().load_markets(*args, **kwargs)
         symbol_info = markets[config.SYMBOL]
         self._margin_asset = symbol_info['settle']
@@ -102,12 +149,22 @@ class MockExchange(exchange_class):
         return markets
 
     def next(self) -> int | None:
+        """Advance the simulation to the next time step.
+
+        Returns:
+            New time index, or None if the end of the data is reached.
+        """
         self._time_index += 1
         if self._time_index >= len(self._historical_data) - 1:
             return None
         return self._time_index
 
     def pnl_analysis(self) -> dict:
+        """Perform a PNL analysis on the simulated transaction history.
+
+        Returns:
+            A dict containing various metrics.
+        """
         df = pd.DataFrame(self._position_history)
         df.to_excel('../simulation-result.xlsx')
         trade_count = len(df)
