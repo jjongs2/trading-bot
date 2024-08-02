@@ -62,7 +62,7 @@ class Loader:
             logger.info(f'{key} loaded successfully')
             return model
         except Exception as e:
-            logger.error(f'Failed to load {key}: {e}')
+            logger.error(f'Failed to load {key}: {str(e)}')
             raise
 
     def load_scaler(self, key: str) -> MinMaxScaler:
@@ -84,7 +84,7 @@ class Loader:
             logger.info(f'{key} loaded successfully')
             return scaler
         except Exception as e:
-            logger.error(f'Failed to load {key}: {e}')
+            logger.error(f'Failed to load {key}: {str(e)}')
             raise
 
     def _download_file(self, key: str) -> str:
@@ -109,5 +109,5 @@ class Loader:
             )
             return download_path
         except Exception as e:
-            logger.error(f'Failed to download {key}: {e}')
+            logger.error(f'Failed to download {key}: {str(e)}')
             raise

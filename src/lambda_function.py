@@ -72,7 +72,7 @@ def lambda_handler(event, context):
         # Re-raise network errors to allow AWS Lambda to retry
         raise
     except Exception as e:
-        logger.exception(f'Exception raised in lambda_handler: {e}')
+        logger.exception(f'Exception raised in lambda_handler: {repr(e)}')
         return {
             'statusCode': 500,
             'body': dumps('Internal Server Error'),

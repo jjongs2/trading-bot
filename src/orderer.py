@@ -59,5 +59,5 @@ class Orderer:
             )
             logger.info(f'Order placed successfully:\n{order}')
         except Exception as e:
-            logger.error(f'Failed to place order: {e}')
+            logger.error(f'Failed to place order: {str(e)}')
             raise

@@ -56,7 +56,7 @@ class Fetcher:
             logger.info('Symbol information fetched successfully')
             return symbol_info
         except Exception as e:
-            logger.error(f'Failed to fetch symbol information: {e}')
+            logger.error(f'Failed to fetch symbol information: {str(e)}')
             raise
 
     def fetch_historical_data(
@@ -100,7 +100,7 @@ class Fetcher:
             logger.info('Historical data fetched successfully')
             return close_data
         except Exception as e:
-            logger.error(f'Failed to fetch historical data: {e}')
+            logger.error(f'Failed to fetch historical data: {str(e)}')
             raise
 
     def fetch_position(self, symbol_info: dict, my_position: Position) -> None:
@@ -132,7 +132,7 @@ class Fetcher:
                 f" at {entry_price} {symbol_info['quote']}"
             )
         except Exception as e:
-            logger.error(f'Failed to fetch position: {e}')
+            logger.error(f'Failed to fetch position: {str(e)}')
             raise
 
     def fetch_account_balance(self, symbol_info: dict) -> float:
@@ -155,5 +155,5 @@ class Fetcher:
             logger.info(f'Account balance: {balance:.1f} {margin_asset}')
             return balance
         except Exception as e:
-            logger.error(f'Failed to fetch account balance: {e}')
+            logger.error(f'Failed to fetch account balance: {str(e)}')
             raise
