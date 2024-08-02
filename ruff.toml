@@ -2,7 +2,10 @@ line-length = 79
 target-version = 'py312'
 
 [lint]
-select = ['E', 'F']
+select = ['E', 'F', 'W']
+
+[lint.pycodestyle]
+max-doc-length = 72
 
 [format]
 line-ending = 'lf'
