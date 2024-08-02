@@ -16,7 +16,7 @@ class Position:
         amount: float = 0.0,
         entry_price: float = 0.0,
         entry_time: str = '',
-    ) -> None:
+    ):
         """Initialize the instance with the given values.
 
         Args:

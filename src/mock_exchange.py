@@ -27,7 +27,7 @@ class MockExchange(exchange_class):
 
     INITIAL_BALANCE = 1000
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs):
         """Initialize the instance with default values."""
         super().__init__(*args, **kwargs)
         self._balance = self.INITIAL_BALANCE

@@ -30,7 +30,7 @@ class Predictor:
         model: tf.keras.Model,
         scaler: MinMaxScaler,
         window_size: int,
-    ) -> None:
+    ):
         """Initialize the instance with the model and scaler.
 
         Args:

@@ -26,7 +26,7 @@ class MyStrategy(Strategy):
     stop loss conditions.
     """
 
-    def __init__(self, threshold: float, stop_loss: float) -> None:
+    def __init__(self, threshold: float, stop_loss: float):
         """Initialize the instance with a threshold and stop loss value.
 
         Args:

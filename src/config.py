@@ -20,7 +20,7 @@ class Config:
     to configuration values.
     """
 
-    def __init__(self) -> None:
+    def __init__(self):
         """Initialize the instance by loading config from YAML file."""
         self._env = getenv('ENVIRONMENT', 'production')
         config_dir = '.' if self._env == 'production' else '..'

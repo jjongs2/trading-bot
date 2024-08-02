@@ -40,7 +40,7 @@ class Trader:
         symbol_info: dict,
         historical_data: pd.Series,
         predicted_data: np.ndarray,
-    ) -> None:
+    ):
         """Initialize the instance with necessary components and data.
 
         Args:

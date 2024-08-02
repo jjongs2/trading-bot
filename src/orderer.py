@@ -22,7 +22,7 @@ class Orderer:
     placement results. Designed to work with ccxt library.
     """
 
-    def __init__(self, exchange: ccxt.Exchange, symbol: str) -> None:
+    def __init__(self, exchange: ccxt.Exchange, symbol: str):
         """Initialize the instance with an exchange and a symbol.
 
         Args:
