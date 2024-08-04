@@ -11,12 +11,10 @@ Typical usage example:
 from logging import getLogger
 
 import ccxt
-import pandas as pd
+import numpy as np
 
 from position import Position
 from side import Side
-
-OHLCV_COLUMNS = ['timestamp', 'open', 'high', 'low', 'close', 'volume']
 
 logger = getLogger(__name__)
 
@@ -64,8 +62,8 @@ class Fetcher:
         interval: str,
         start_time: str | None,
         limit: int | None,
-    ) -> pd.Series:
-        """Fetch historical price data for the symbol.
+    ) -> np.ndarray:
+        """Fetch historical data for the symbol.
 
         Args:
             interval: The time interval for the data.
@@ -73,7 +71,7 @@ class Fetcher:
             limit: The maximum number of data to fetch.
 
         Returns:
-            A pandas Series containing closing prices.
+            A numpy array of OHLCV data.
 
         Raises:
             Exception: An error occurred fetching historical data.
@@ -95,10 +93,8 @@ class Fetcher:
                     break
                 total_data.extend(partial_data)
                 since = partial_data[-1][0] + 1
-            df = pd.DataFrame(data=total_data, columns=OHLCV_COLUMNS)
-            close_data = df['close'].iloc[:-1].astype(float)
             logger.info('Historical data fetched successfully')
-            return close_data
+            return np.array(total_data)[:-1, 1:]
         except Exception as e:
             logger.error(f'Failed to fetch historical data: {str(e)}')
             raise

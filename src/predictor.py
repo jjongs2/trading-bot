@@ -2,17 +2,16 @@
 
 Typical usage example:
 
-    predictor = Predictor(model, scaler, window_size=5)
-    preprocessed_data = predictor.preprocess(historical_data)
+    predictor = Predictor(model, scaler)
+    preprocessed_data = predictor.preprocess(ohlcv_data, window_size=5)
     predicted_data = predictor.predict(preprocessed_data)
 """
 
 from logging import getLogger
 
 import numpy as np
-import pandas as pd
 import tensorflow as tf
-from sklearn.preprocessing import MinMaxScaler
+from numpy.lib.stride_tricks import sliding_window_view
 
 logger = getLogger(__name__)
 
@@ -25,48 +24,41 @@ class Predictor:
     models and scikit-learn scalers.
     """
 
-    def __init__(
-        self,
-        model: tf.keras.Model,
-        scaler: MinMaxScaler,
-        window_size: int,
-    ):
+    def __init__(self, model: tf.keras.Model, scalers: dict):
         """Initialize the instance with the model and scaler.
 
         Args:
             model: A pre-trained keras model for prediction.
             scaler: A fitted scaler for data normalization.
-            window_size: The size of the rolling window for smoothing.
         """
         self._model = model
-        self._scaler = scaler
-        self._window_size = window_size
+        self._scalers = scalers
 
-    def preprocess(self, data: pd.Series) -> np.ndarray:
+    def preprocess(self, data: np.ndarray, window_size: int) -> np.ndarray:
         """Preprocess the input time series data.
 
-        Use the rolling window to apply smoothing, scale the data using
-        the provided scaler, and reshape it into the format expected by
-        the model.
+        Scale the data using the provided scalers, and reshape it into
+        the format expected by the model.
 
         Args:
-            data:
-                A pandas Series containing time series data to
-                preprocess.
+            data: A numpy array of time series data to preprocess.
+            window_size: The size of the sliding window.
 
         Returns:
             A numpy array of preprocessed data ready to be entered into
             the model.
         """
         logger.info('Preprocessing data...')
-        smoothed_data = data.rolling(self._window_size).mean()
-        reshaped_data = smoothed_data.to_numpy().reshape(-1, 1)
-        scaled_data = self._scaler.transform(reshaped_data)
-        window_count = len(data) - self._window_size + 1
-        result = np.zeros((window_count, self._window_size, 1))
-        for i in range(window_count):
-            result[i, :, 0] = scaled_data[i : i + self._window_size, 0]
-        return result
+        data_count, scaler_count = data.shape
+        window_count = data_count - window_size + 1
+        scaled_data = np.zeros_like(data)
+        for i in range(scaler_count):
+            column = data[:, i].reshape(data_count, 1)
+            scaled_data[:, i] = self._scalers[i].transform(column).ravel()
+        return sliding_window_view(
+            scaled_data,
+            window_shape=(window_size, scaler_count),
+        ).reshape(window_count, window_size, scaler_count)
 
     def predict(self, input_data: np.ndarray) -> np.ndarray:
         """Make predictions using preprocessed input data.
@@ -78,8 +70,9 @@ class Predictor:
             input_data: A numpy array of preprocessed data.
 
         Returns:
-            A numpy array of predictions in the original scale.
+            A numpy array of closing price predictions in the original
+            scale.
         """
         logger.info('Predicting...')
-        prediction = self._model.predict(input_data)[self._window_size - 1 :]
-        return self._scaler.inverse_transform(prediction).ravel()
+        prediction = self._model.predict(input_data)
+        return self._scalers[3].inverse_transform(prediction).ravel()

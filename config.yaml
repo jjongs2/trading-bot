@@ -1,11 +1,10 @@
 default:
   EXCHANGE_ID: 'binanceusdm'
-  INTERVAL: '4h'
+  INTERVAL: '1d'
   LEVERAGE: 1
   MIN_ORDER_AMOUNT: 0.002
-  MIN_REQUIRED_DATA: 9    # 2 * WINDOW_SIZE - 1
   MODEL_KEY: 'model.keras'
-  SCALER_KEY: 'scaler.pkl'
+  SCALERS_KEY: 'scalers.pkl'
   STOP_LOSS: 0.00         # 0.01 = 1%
   SYMBOL: 'BTC/USDT:USDT'
   THRESHOLD: 0.00         # 0.01 = 1%

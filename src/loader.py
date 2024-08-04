@@ -1,10 +1,10 @@
-"""Define a Loader class that handles the loading of a model and scaler
+"""Define a Loader class that handles the loading of a model and scalers
 
 Typical usage example:
 
     loader = Loader(s3_client, 'YOUR_BUCKET_NAME', '/tmp')
     model = loader.load_model('model.keras')
-    scaler = loader.load_scaler('scaler.pkl')
+    scalers = loader.load_scalers('scalers.pkl')
 """
 
 from logging import getLogger
@@ -12,7 +12,6 @@ from pickle import load
 
 import tensorflow as tf
 from mypy_boto3_s3 import S3Client
-from sklearn.preprocessing import MinMaxScaler
 
 from mock_s3client import MockS3Client
 
@@ -20,11 +19,11 @@ logger = getLogger(__name__)
 
 
 class Loader:
-    """Load the model and scaler.
+    """Load the model and scalers.
 
-    Provide methods to load the keras model and scikit-learn scaler from
-    an S3 bucket or local file system. Support both real S3 client and
-    mock client for simulation.
+    Provide methods to load the keras model and scikit-learn scalers
+    from an S3 bucket or local file system. Support both real S3 client
+    and mock client for simulation.
     """
 
     def __init__(
@@ -65,24 +64,24 @@ class Loader:
             logger.error(f'Failed to load {key}: {str(e)}')
             raise
 
-    def load_scaler(self, key: str) -> MinMaxScaler:
-        """Load the scikit-learn scaler from S3 or local storage.
+    def load_scalers(self, key: str) -> dict:
+        """Load the scikit-learn scalers from S3 or local storage.
 
         Args:
-            key: The S3 key or local filename of the scaler to load.
+            key: The filename of the scalers to load.
 
         Returns:
-            An instance of the scaler.
+            A dict containing the scalers.
 
         Raises:
-            Exception: An error occurred loading the scaler.
+            Exception: An error occurred loading the scalers.
         """
         try:
             path = self._download_file(key)
             with open(path, 'rb') as f:
-                scaler = load(f)
+                scalers = load(f)
             logger.info(f'{key} loaded successfully')
-            return scaler
+            return scalers
         except Exception as e:
             logger.error(f'Failed to load {key}: {str(e)}')
             raise

@@ -6,9 +6,10 @@ import ccxt
 import pandas as pd
 
 from config import Config
-from fetcher import OHLCV_COLUMNS
 from position import Position
 from side import Side
+
+OHLCV_COLUMNS = ['timestamp', 'open', 'high', 'low', 'close', 'volume']
 
 config = Config()
 exchange_class = getattr(ccxt, config.EXCHANGE_ID)
@@ -97,7 +98,7 @@ class MockExchange(exchange_class):
         return {'total': {self._margin_asset: self._balance}}
 
     def fetch_ohlcv(self, *args, **kwargs) -> list:
-        """Fetch OHLCV(Open, High, Low, Close, Volume) data.
+        """Fetch OHLCV data.
 
         Update internal historical data and return actual OHLCV data.
 
@@ -106,17 +107,16 @@ class MockExchange(exchange_class):
         """
         data = super().fetch_ohlcv(*args, **kwargs)
         df = pd.DataFrame(data=data, columns=OHLCV_COLUMNS)
-        df['time'] = pd.to_datetime(
+        df['timestamp'] = pd.to_datetime(
             arg=df['timestamp'],
             utc=True,
             unit='ms',
         ).astype(str)
-        df.set_index('time', inplace=True)
-        close = df['close'].astype(float)
+        df.set_index('timestamp', inplace=True)
         if self._historical_data is None:
-            self._historical_data = close.iloc[config.MIN_REQUIRED_DATA - 1 :]
+            self._historical_data = df.iloc[config.WINDOW_SIZE - 1 :]
         else:
-            self._historical_data = pd.concat([self._historical_data, close])
+            self._historical_data = pd.concat([self._historical_data, df])
         return data
 
     def fetch_positions(self, *args, **kwargs) -> list:

@@ -46,24 +46,24 @@ def create_trader(
     orderer = Orderer(exchange, config.SYMBOL)
 
     model = loader.load_model(config.MODEL_KEY)
-    scaler = loader.load_scaler(config.SCALER_KEY)
-    predictor = Predictor(model, scaler, config.WINDOW_SIZE)
+    scaler = loader.load_scalers(config.SCALERS_KEY)
+    predictor = Predictor(model, scaler)
 
     symbol_info = fetcher.fetch_symbol_info()
 
     start_time = getattr(config, 'START_TIME', None)
-    limit = None if start_time else config.MIN_REQUIRED_DATA + 1
+    limit = None if start_time else config.WINDOW_SIZE + 1
     historical_data = fetcher.fetch_historical_data(
         interval=config.INTERVAL,
         start_time=start_time,
         limit=limit,
     )
-    if len(historical_data) < config.MIN_REQUIRED_DATA:
-        raise Exception('Not enough data for prediction')
-
-    preprocessed_data = predictor.preprocess(historical_data)
-    predicted_data = predictor.predict(preprocessed_data)
-    historical_data = historical_data.iloc[config.MIN_REQUIRED_DATA - 1 :]
+    preprocessed_data = predictor.preprocess(
+        data=historical_data,
+        window_size=config.WINDOW_SIZE,
+    )
+    predicted_prices = predictor.predict(preprocessed_data)
+    historical_prices = historical_data[config.WINDOW_SIZE - 1 :, 3]
 
     return Trader(
         config=config,
@@ -72,6 +72,6 @@ def create_trader(
         position=position,
         strategy=strategy,
         symbol_info=symbol_info,
-        historical_data=historical_data,
-        predicted_data=predicted_data,
+        historical_prices=historical_prices,
+        predicted_prices=predicted_prices,
     )

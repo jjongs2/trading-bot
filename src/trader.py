@@ -9,7 +9,6 @@ Typical usage example:
 from logging import getLogger
 
 import numpy as np
-import pandas as pd
 
 from config import Config
 from fetcher import Fetcher
@@ -38,8 +37,8 @@ class Trader:
         position: Position,
         strategy: Strategy,
         symbol_info: dict,
-        historical_data: pd.Series,
-        predicted_data: np.ndarray,
+        historical_prices: np.ndarray,
+        predicted_prices: np.ndarray,
     ):
         """Initialize the instance with necessary components and data.
 
@@ -50,8 +49,8 @@ class Trader:
             position: A Position object representing the position.
             strategy: A Strategy object for making trade decisions.
             symbol_info: A dict containing symbol information.
-            historical_data: A pandas Series of historical price data.
-            predicted_data: A numpy array of predicted price data.
+            historical_prices: A numpy array of historical price data.
+            predicted_prices: A numpy array of predicted price data.
         """
         self._config = config
         self._fetcher = fetcher
@@ -59,8 +58,8 @@ class Trader:
         self._position = position
         self._strategy = strategy
         self._symbol_info = symbol_info
-        self._historical_data = historical_data
-        self._predicted_data = predicted_data
+        self._historical_prices = historical_prices
+        self._predicted_prices = predicted_prices
 
     def execute_trade(self, time_index: int = -1) -> None:
         """Execute a single trade decision.
@@ -75,8 +74,8 @@ class Trader:
                 historical and predicted data. Defaults to -1 (latest).
         """
         self._fetcher.fetch_position(self._symbol_info, self._position)
-        current_price = self._historical_data.iloc[time_index].item()
-        predicted_price = self._predicted_data.item(time_index)
+        current_price = self._historical_prices.item(time_index)
+        predicted_price = self._predicted_prices.item(time_index)
         logger.info(
             f"[{self._symbol_info['id']}]"
             f" Current price: {current_price:.1f}"
