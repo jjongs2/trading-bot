@@ -76,10 +76,11 @@ class Trader:
         self._fetcher.fetch_position(self._symbol_info, self._position)
         current_price = self._historical_prices.item(time_index)
         predicted_price = self._predicted_prices.item(time_index)
+        symbol_id = self._symbol_info['id']
+        price_precision = self._symbol_info['precision']['price']
         logger.info(
-            f"[{self._symbol_info['id']}]"
-            f" Current price: {current_price:.1f}"
-            f", Predicted price: {predicted_price:.1f}"
+            f'[{symbol_id}] Current price: {current_price:{price_precision}f}'
+            f', Predicted price: {predicted_price:{price_precision}f}'
         )
         if self._position.is_none():
             self._open_position_if(current_price, predicted_price)
