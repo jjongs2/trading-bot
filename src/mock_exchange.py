@@ -38,13 +38,13 @@ class MockExchange(exchange_class):
         self._position = Position()
         self._position_history = [
             {
-                'opened': None,
-                'closed': None,
+                'entryTime': None,
+                'closeTime': None,
                 'side': None,
                 'amount': None,
                 'entryPrice': None,
                 'closePrice': None,
-                'returnRate': None,
+                'return': None,
                 'balance': self.INITIAL_BALANCE,
             }
         ]
@@ -84,13 +84,13 @@ class MockExchange(exchange_class):
             entry_price = self._position.entry_price
             self._position_history.append(
                 {
-                    'opened': self._position.entry_time,
-                    'closed': current_time,
+                    'entryTime': self._position.entry_time,
+                    'closeTime': current_time,
                     'side': self._position.side,
                     'amount': amount,
                     'entryPrice': entry_price,
                     'closePrice': price,
-                    'returnRate': -sign * (price - entry_price) / entry_price,
+                    'return': -sign * (price - entry_price) / entry_price,
                     'balance': self._balance,
                 }
             )
@@ -181,8 +181,8 @@ class MockExchange(exchange_class):
             return {}
         self._export_to_excel(df, '../simulation-result.xlsx')
 
-        win_count = (df['returnRate'] > 0.0).sum()
-        lose_count = (df['returnRate'] < 0.0).sum()
+        win_count = (df['return'] > 0.0).sum()
+        lose_count = (df['return'] < 0.0).sum()
         win_rate = win_count / trade_count
 
         pnl = df['balance'].diff().iloc[1:]
@@ -190,8 +190,8 @@ class MockExchange(exchange_class):
         avg_loss = pnl[pnl < 0.0].sum() / lose_count if lose_count > 0 else 0
         pnl_ratio = avg_profit / -avg_loss if avg_loss < 0 else inf
 
-        max_profit_rate = df['returnRate'].max()
-        max_loss_rate = df['returnRate'].min()
+        max_profit_rate = df['return'].max()
+        max_loss_rate = df['return'].min()
         final_balance = df['balance'].iloc[-1]
 
         return {
