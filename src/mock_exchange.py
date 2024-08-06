@@ -33,11 +33,10 @@ class MockExchange(exchange_class):
         super().__init__(*args, **kwargs)
         self._balance = self.INITIAL_BALANCE
         self._historical_data = None
-        self._margin_asset = ''
         self._position = Position()
         self._position_history = []
+        self._symbol_info = None
         self._time_index = -1
-        self._transaction_fee = 0
 
     def cancel_all_orders(self, *args, **kwargs) -> list:
         """Do nothing."""
@@ -63,7 +62,7 @@ class MockExchange(exchange_class):
         """
         sign = side.sign()
         notional = amount * price
-        self._balance -= sign * notional * (1 + self._transaction_fee)
+        self._balance -= sign * notional * (1 + self._symbol_info['taker'])
         current_time = self._historical_data.index[self._time_index + 1]
         if self._position.is_none():
             self._position.update(side, amount, price, current_time)
@@ -95,7 +94,7 @@ class MockExchange(exchange_class):
         Returns:
             A dict containing the simulated account balance.
         """
-        return {'total': {self._margin_asset: self._balance}}
+        return {'total': {self._symbol_info['settle']: self._balance}}
 
     def fetch_ohlcv(self, *args, **kwargs) -> list:
         """Fetch OHLCV data.
@@ -145,9 +144,7 @@ class MockExchange(exchange_class):
             A dict containing actual market data.
         """
         markets = super().load_markets(*args, **kwargs)
-        symbol_info = markets[config.SYMBOL]
-        self._margin_asset = symbol_info['settle']
-        self._transaction_fee = symbol_info['taker']
+        self._symbol_info = markets[config.SYMBOL]
         return markets
 
     def next(self) -> int | None:
