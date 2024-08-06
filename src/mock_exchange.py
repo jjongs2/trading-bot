@@ -106,6 +106,8 @@ class MockExchange(exchange_class):
             A list of lists containing the actual OHLCV data.
         """
         data = super().fetch_ohlcv(*args, **kwargs)
+        if not data:
+            return data
         df = pd.DataFrame(data=data, columns=OHLCV_COLUMNS)
         df['timestamp'] = pd.to_datetime(
             arg=df['timestamp'],
