@@ -73,7 +73,8 @@ class MockExchange(exchange_class):
         """
         sign = side.sign()
         notional = amount * price
-        self._balance -= sign * notional * (1 + self._symbol_info['taker'])
+        transaction_fee = self._symbol_info['taker']
+        self._balance -= sign * notional * (1 + transaction_fee)
         current_time = self._historical_data.index[self._time_index + 1]
         if self._position.is_none():
             self._position.update(side, amount, price, current_time)
@@ -105,7 +106,8 @@ class MockExchange(exchange_class):
         Returns:
             A dict containing the simulated account balance.
         """
-        return {'total': {self._symbol_info['settle']: self._balance}}
+        margin_asset = self._symbol_info['settle']
+        return {'total': {margin_asset: self._balance}}
 
     def fetch_ohlcv(self, *args, **kwargs) -> list:
         """Fetch OHLCV data.
@@ -192,6 +194,7 @@ class MockExchange(exchange_class):
 
         max_profit_rate = df['returnRate'].max()
         max_loss_rate = df['returnRate'].min()
+        final_balance = df['balance'].iloc[-1]
 
         return {
             'Number of trades': f'{trade_count}',
@@ -199,5 +202,5 @@ class MockExchange(exchange_class):
             'P&L ratio': f'{pnl_ratio:.2f}',
             'Max profit rate (per trade)': f'{max_profit_rate:.1%}',
             'Max loss rate (per trade)': f'{max_loss_rate:.1%}',
-            'Final balance': f"{df['balance'].iloc[-1]:.1f}",
+            'Final balance': f'{final_balance:.1f}',
         }
