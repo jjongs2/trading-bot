@@ -4,6 +4,8 @@ from math import inf
 
 import ccxt
 import pandas as pd
+from openpyxl import load_workbook
+from openpyxl.chart import LineChart, Reference
 
 from config import Config
 from position import Position
@@ -121,11 +123,7 @@ class MockExchange(exchange_class):
         if not data:
             return data
         df = pd.DataFrame(data=data, columns=OHLCV_COLUMNS)
-        df['timestamp'] = pd.to_datetime(
-            arg=df['timestamp'],
-            utc=True,
-            unit='ms',
-        ).astype(str)
+        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
         df.set_index('timestamp', inplace=True)
         if self._historical_data is None:
             self._historical_data = df.iloc[config.WINDOW_SIZE - 1 :]
@@ -208,8 +206,39 @@ class MockExchange(exchange_class):
     def _export_to_excel(self, df: pd.DataFrame, filename: str) -> None:
         """Export the DataFrame to Excel.
 
+        Save the DataFrame to an Excel file and chart the change in
+        balance over transactions.
+
         Args:
             df: The DataFrame containing the position history.
             filename: The path to save the Excel file.
         """
         df.to_excel(filename)
+        wb = load_workbook(filename)
+        ws = wb.active
+
+        margin_asset = self._symbol_info['settle']
+        chart = LineChart()
+        chart.legend = None
+        chart.title = f'{margin_asset} balance'
+        chart.x_axis.number_format = 'mm-dd'
+
+        min_col = 2
+        min_row, max_row = 2, len(df) + 1
+        balance = Reference(
+            worksheet=ws,
+            min_col=min_col + df.columns.get_loc('balance'),
+            min_row=min_row,
+            max_row=max_row,
+        )
+        closed = Reference(
+            worksheet=ws,
+            min_col=min_col + df.columns.get_loc('closed'),
+            min_row=min_row,
+            max_row=max_row,
+        )
+        chart.add_data(balance)
+        chart.set_categories(closed)
+
+        ws.add_chart(chart, 'K3')
+        wb.save(filename)
