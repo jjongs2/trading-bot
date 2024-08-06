@@ -12,6 +12,25 @@ from typing import Any
 import yaml
 
 
+def convert_type(env: str) -> int | float | str:
+    """Try to convert the input string to the appropriate type.
+
+    Args:
+        env: The value of the environment variable to convert.
+
+    Returns:
+        The value of the converted type if successful,
+        otherwise the original string.
+    """
+    try:
+        return int(env)
+    except ValueError:
+        try:
+            return float(env)
+        except ValueError:
+            return env
+
+
 class Config:
     """Configuration settings.
 
@@ -43,28 +62,9 @@ class Config:
             AttributeError: Configuration item is not found.
         """
         if attr := getenv(name):
-            return self._convert_type(attr)
+            return convert_type(attr)
         if name in self._config.get(self._env, {}):
             return self._config[self._env][name]
         if name in self._config['default']:
             return self._config['default'][name]
         raise AttributeError(f'{name} not set')
-
-    @staticmethod
-    def _convert_type(env: str) -> int | float | str:
-        """Try to convert the input string to the appropriate type.
-
-        Args:
-            env: The value of the environment variable to convert.
-
-        Returns:
-            The value of the converted type if successful,
-            otherwise the original string.
-        """
-        try:
-            return int(env)
-        except ValueError:
-            try:
-                return float(env)
-            except ValueError:
-                return env
