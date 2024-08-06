@@ -178,10 +178,10 @@ class MockExchange(exchange_class):
             A dict containing various metrics.
         """
         df = pd.DataFrame(self._position_history)
-        df.to_excel('../simulation-result.xlsx')
         trade_count = len(df) - 1
         if trade_count == 0:
             return {}
+        self._export_to_excel(df, '../simulation-result.xlsx')
 
         win_count = (df['returnRate'] > 0.0).sum()
         lose_count = (df['returnRate'] < 0.0).sum()
@@ -204,3 +204,12 @@ class MockExchange(exchange_class):
             'Max loss rate (per trade)': f'{max_loss_rate:.1%}',
             'Final balance': f'{final_balance:.1f}',
         }
+
+    def _export_to_excel(self, df: pd.DataFrame, filename: str) -> None:
+        """Export the DataFrame to Excel.
+
+        Args:
+            df: The DataFrame containing the position history.
+            filename: The path to save the Excel file.
+        """
+        df.to_excel(filename)
