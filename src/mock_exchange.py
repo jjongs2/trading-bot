@@ -34,7 +34,18 @@ class MockExchange(exchange_class):
         self._balance = self.INITIAL_BALANCE
         self._historical_data = None
         self._position = Position()
-        self._position_history = []
+        self._position_history = [
+            {
+                'opened': None,
+                'closed': None,
+                'side': None,
+                'amount': None,
+                'entryPrice': None,
+                'closePrice': None,
+                'returnRate': None,
+                'balance': self.INITIAL_BALANCE,
+            }
+        ]
         self._symbol_info = None
         self._time_index = -1
 
@@ -166,7 +177,7 @@ class MockExchange(exchange_class):
         """
         df = pd.DataFrame(self._position_history)
         df.to_excel('../simulation-result.xlsx')
-        trade_count = len(df)
+        trade_count = len(df) - 1
         if trade_count == 0:
             return {}
 
@@ -174,8 +185,7 @@ class MockExchange(exchange_class):
         lose_count = (df['returnRate'] < 0.0).sum()
         win_rate = win_count / trade_count
 
-        pnl = df['balance'].diff()
-        pnl.iloc[0] = df['balance'].iloc[0] - self.INITIAL_BALANCE
+        pnl = df['balance'].diff().iloc[1:]
         avg_profit = pnl[pnl > 0.0].sum() / win_count if win_count > 0 else 0
         avg_loss = pnl[pnl < 0.0].sum() / lose_count if lose_count > 0 else 0
         pnl_ratio = avg_profit / -avg_loss if avg_loss < 0 else inf
