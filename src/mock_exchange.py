@@ -4,8 +4,6 @@ from math import inf
 
 import ccxt
 import pandas as pd
-from openpyxl import load_workbook
-from openpyxl.chart import LineChart, Reference
 
 from config import Config
 from position import Position
@@ -179,7 +177,8 @@ class MockExchange(exchange_class):
         trade_count = len(df) - 1
         if trade_count == 0:
             return {}
-        self._export_to_excel(df, '../simulation-result.xlsx')
+        df.loc[0, 'closeTime'] = df.loc[1, 'entryTime']
+        self._export_to_excel(df, '../simulation-history.xlsx')
 
         win_count = (df['return'] > 0.0).sum()
         lose_count = (df['return'] < 0.0).sum()
@@ -213,32 +212,37 @@ class MockExchange(exchange_class):
             df: The DataFrame containing the position history.
             filename: The path to save the Excel file.
         """
-        df.to_excel(filename)
-        wb = load_workbook(filename)
-        ws = wb.active
 
-        margin_asset = self._symbol_info['settle']
-        chart = LineChart()
-        chart.legend = None
-        chart.title = f'{margin_asset} balance'
-        chart.x_axis.number_format = 'mm-dd'
+        with pd.ExcelWriter(filename, engine='xlsxwriter') as writer:
+            df.to_excel(writer, sheet_name='Position')
+            wb = writer.book
+            ws = writer.sheets['Position']
 
-        min_col = 2
-        min_row, max_row = 2, len(df) + 1
-        balance = Reference(
-            worksheet=ws,
-            min_col=min_col + df.columns.get_loc('balance'),
-            min_row=min_row,
-            max_row=max_row,
-        )
-        closed = Reference(
-            worksheet=ws,
-            min_col=min_col + df.columns.get_loc('closed'),
-            min_row=min_row,
-            max_row=max_row,
-        )
-        chart.add_data(balance)
-        chart.set_categories(closed)
+            margin_asset = self._symbol_info['settle']
+            chart = wb.add_chart({'type': 'line'})
+            chart.set_legend({'none': True})
+            chart.set_title({'name': f'{margin_asset} balance'})
+            chart.set_x_axis({'num_format': 'mm-dd'})
 
-        ws.add_chart(chart, 'K3')
-        wb.save(filename)
+            first_row, last_row = 1, len(df) + 1
+            closed_col = df.columns.get_loc('closeTime') + 1
+            balance_col = df.columns.get_loc('balance') + 1
+            chart.add_series(
+                {
+                    'categories': [
+                        ws.name,
+                        first_row,
+                        closed_col,
+                        last_row,
+                        closed_col,
+                    ],
+                    'values': [
+                        ws.name,
+                        first_row,
+                        balance_col,
+                        last_row,
+                        balance_col,
+                    ],
+                }
+            )
+            ws.insert_chart('K3', chart)
