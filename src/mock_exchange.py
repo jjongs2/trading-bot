@@ -218,6 +218,21 @@ class MockExchange(exchange_class):
             wb = writer.book
             ws = writer.sheets['Position']
 
+            precision = self._symbol_info['precision']
+            amount_precision = str(precision['amount']).replace('1', '0')
+            price_precision = str(precision['price']).replace('1', '0')
+
+            amount_format = wb.add_format({'num_format': amount_precision})
+            price_format = wb.add_format({'num_format': price_precision})
+            return_format = wb.add_format({'num_format': '0.0%'})
+            balance_format = wb.add_format({'num_format': '0.0'})
+
+            ws.set_column('B:C', width=18.63)
+            ws.set_column('E:E', width=7.00, cell_format=amount_format)
+            ws.set_column('F:G', width=8.75, cell_format=price_format)
+            ws.set_column('H:H', width=7.00, cell_format=return_format)
+            ws.set_column('I:I', width=9.25, cell_format=balance_format)
+
             margin_asset = self._symbol_info['settle']
             chart = wb.add_chart({'type': 'line'})
             chart.set_legend({'none': True})
