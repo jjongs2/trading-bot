@@ -61,7 +61,7 @@ class Fetcher:
         self,
         interval: str,
         start_time: str | None,
-        limit: int | None,
+        limit: int | None = None,
     ) -> np.ndarray:
         """Fetch historical data for the symbol.
 
