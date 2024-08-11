@@ -12,10 +12,10 @@ default:
 
 production:
   DOWNLOAD_DIR: '/tmp'
-  MAX_RETRIES: 2
+  MAX_RETRIES: 0
   RETRY_DELAY: 300_000    # 5 minutes
 
 simulation:
-  BUCKET_NAME: ''                     # Not used
-  DOWNLOAD_DIR: '../downloads'        # Path to model and scaler file
+  BUCKET_NAME: ''                     # No need to change
+  DOWNLOAD_DIR: '../downloads'        # Path to model and scalers
   START_TIME: '2024-01-01T00:00:00Z'  # ISO 8601
