@@ -1,4 +1,3 @@
 # Simulation
 src/mock_exchange.py
-src/mock_s3client.py
 src/simulator.py
