@@ -86,12 +86,19 @@ To deploy to AWS Lambda for serverless live trading:
 
 1. Create an S3 bucket to store the model and scalers.
 2. Create an ECR Repository to store Docker images.
-3. Build and push the Docker image (can be done by manually running the workflow 'Manual deploy to Amazon ECR' in GitHub Actions).
+3. Build and push the Docker image.
+   - Can be done by manually running the workflow 'Manual deploy to Amazon ECR' in GitHub Actions.
 4. Create a Lambda function using the Docker image pushed to ECR.
-5. Set the required environment variables in your Lambda function configuration.
-   - `BUCKET_NAME`
-   - `EXCHANGE_API_KEY`
-   - `EXCHANGE_API_SECRET`
+   - Please grant S3 access to the IAM role.
+     <img src="https://dydi59svggub9.cloudfront.net/trading-bot/iam-role.png" width="600" style="display: block; margin: 5px 0;">
+5. Set the configuration of your Lambda function.
+   - Recommended general configuration
+     - Memory: 1~2 GB
+     - Timeout: 2 min
+   - Required environment variables
+     - `BUCKET_NAME`
+     - `EXCHANGE_API_KEY`
+     - `EXCHANGE_API_SECRET`
 6. Create an EventBridge rule to periodically execute the Lambda function.
 
 <br>
