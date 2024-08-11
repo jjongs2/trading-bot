@@ -1,4 +1,4 @@
-name: Build and push container image to Amazon ECR
+name: Manual deploy to Amazon ECR
 
 on: workflow_dispatch
 
@@ -7,7 +7,7 @@ env:
   ECR_REPOSITORY: trading-bot  # set this to your Amazon ECR repository name
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
