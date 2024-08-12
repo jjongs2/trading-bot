@@ -14,7 +14,7 @@ A serverless cryptocurrency trading bot that predicts price movements using deep
 
 ## Prerequisites
 
-You need a pre-trained deep learning model and scalers.
+You need a pre-trained deep learning model and scalers. For more information, see [here](https://jjongs2.github.io/posts/trading-bot/).
 
 <br>
 
@@ -67,7 +67,7 @@ Now run the simulator.
 (env) user@host:~/trading-bot/src$ python simulator.py
 ```
 
-```bash
+```
 ---------------------------  ------
            Number of trades      64
                    Win rate   51.6%
@@ -78,7 +78,7 @@ Max profit rate (per trade)    9.5%
 ---------------------------  ------
 ```
 
-<img src="https://dydi59svggub9.cloudfront.net/trading-bot/usdt-balance.png" width="500">
+<img src="https://dydi59svggub9.cloudfront.net/trading-bot/usdt-balance.png" alt="USDT balance" width="500">
 
 ### Live Trading
 
@@ -90,7 +90,7 @@ To deploy to AWS Lambda for serverless live trading:
    - Can be done by manually running the workflow 'Manual deploy to Amazon ECR' in GitHub Actions.
 4. Create a Lambda function using the Docker image pushed to ECR.
    - Please grant S3 access to the IAM role.
-     <img src="https://dydi59svggub9.cloudfront.net/trading-bot/iam-role.png" width="600" style="display: block; margin: 5px 0;">
+     <img src="https://dydi59svggub9.cloudfront.net/trading-bot/iam-role.png" alt="IAM role" width="600" style="display: block; margin: 5px 0;">
 5. Set the configuration of your Lambda function.
    - Recommended general configuration
      - Memory: 1~2 GB
