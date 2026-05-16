@@ -202,6 +202,17 @@ class MockExchange(exchange_class):
             'Final balance': f'{final_balance:.1f}',
         }
 
+    @staticmethod
+    def _axis_range(series: pd.Series, pad: float = 0.2) -> tuple[float, float]:
+        """Return a padded (min, max) range rounded to a nice step."""
+        lo, hi = float(series.min()), float(series.max())
+        span = hi - lo or abs(hi) or 1.0
+        step = 10 ** (len(str(int(span))) - 2) or 1
+        return (
+            step * (int((lo - span * pad) / step)),
+            step * (int((hi + span * pad) / step) + 1),
+        )
+
     def _export_to_excel(self, df: pd.DataFrame, filename: str) -> None:
         """Export the DataFrame to Excel.
 
@@ -234,23 +245,42 @@ class MockExchange(exchange_class):
             ws.set_column('I:I', width=9.25, cell_format=balance_format)
 
             margin_asset = self._symbol_info['settle']
+            base_asset = self._symbol_info['base']
             chart = wb.add_chart({'type': 'line'})
-            chart.set_legend({'none': True})
-            chart.set_title({'name': f'{margin_asset} balance'})
+            chart.set_legend({'position': 'top'})
             chart.set_x_axis({'num_format': 'mm-dd'})
+            balance_min, balance_max = self._axis_range(df['balance'])
+            price_min, price_max = self._axis_range(df['closePrice'])
+            chart.set_y_axis(
+                {
+                    'name': f'{margin_asset} balance',
+                    'min': balance_min,
+                    'max': balance_max,
+                }
+            )
+            chart.set_y2_axis(
+                {
+                    'name': f'{base_asset} price',
+                    'min': price_min,
+                    'max': price_max,
+                }
+            )
 
             first_row, last_row = 1, len(df) + 1
             closed_col = df.columns.get_loc('closeTime') + 1
             balance_col = df.columns.get_loc('balance') + 1
+            close_price_col = df.columns.get_loc('closePrice') + 1
+            categories = [
+                ws.name,
+                first_row,
+                closed_col,
+                last_row,
+                closed_col,
+            ]
             chart.add_series(
                 {
-                    'categories': [
-                        ws.name,
-                        first_row,
-                        closed_col,
-                        last_row,
-                        closed_col,
-                    ],
+                    'name': f'{margin_asset} balance',
+                    'categories': categories,
                     'values': [
                         ws.name,
                         first_row,
@@ -258,6 +288,20 @@ class MockExchange(exchange_class):
                         last_row,
                         balance_col,
                     ],
+                }
+            )
+            chart.add_series(
+                {
+                    'name': f'{base_asset} price',
+                    'categories': categories,
+                    'values': [
+                        ws.name,
+                        first_row,
+                        close_price_col,
+                        last_row,
+                        close_price_col,
+                    ],
+                    'y2_axis': True,
                 }
             )
             ws.insert_chart('K3', chart)
