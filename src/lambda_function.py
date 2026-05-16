@@ -16,17 +16,38 @@ import boto3
 import ccxt
 
 from config import Config
-from trader_factory import create_trader
+from trader_factory import build_trader, init_components
 
 getLogger().setLevel('INFO')
 logger = getLogger(__name__)
+
+# Run at module import time so that S3 downloads, model loading, and
+# exchange metadata fetching happen during the Lambda init phase rather
+# than the handler. This keeps invocations fast and avoids runtime hangs
+# from lazy container image loading.
+config = Config()
+s3_client = boto3.client('s3')
+exchange_class = getattr(ccxt, config.EXCHANGE_ID)
+exchange = exchange_class(
+    {
+        'apiKey': config.EXCHANGE_API_KEY,
+        'secret': config.EXCHANGE_API_SECRET,
+        'options': {
+            'maxRetriesOnFailure': config.MAX_RETRIES,
+            'maxRetriesOnFailureDelay': config.RETRY_DELAY,
+        },
+    }
+)
+fetcher, orderer, predictor, symbol_info = init_components(
+    s3_client, exchange, config
+)
 
 
 def lambda_handler(event, context):
     """Handler for AWS Lambda function.
 
-    Connect to the exchange client, create a trader instance and execute
-    a single trade decision.
+    Build a Trader using prebuilt components and execute a single trade
+    decision based on the latest market data.
 
     Args:
         event:
@@ -49,20 +70,7 @@ def lambda_handler(event, context):
     """
     logger.info('Starting lambda_handler function...')
     try:
-        config = Config()
-        s3_client = boto3.client('s3')
-        exchange_class = getattr(ccxt, config.EXCHANGE_ID)
-        exchange = exchange_class(
-            {
-                'apiKey': config.EXCHANGE_API_KEY,
-                'secret': config.EXCHANGE_API_SECRET,
-                'options': {
-                    'maxRetriesOnFailure': config.MAX_RETRIES,
-                    'maxRetriesOnFailureDelay': config.RETRY_DELAY,
-                },
-            }
-        )
-        trader = create_trader(s3_client, exchange, config)
+        trader = build_trader(fetcher, orderer, predictor, symbol_info, config)
         trader.execute_trade()
         return {
             'statusCode': 200,
