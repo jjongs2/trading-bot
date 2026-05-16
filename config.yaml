@@ -18,4 +18,5 @@ production:
 simulation:
   BUCKET_NAME: ''                     # No need to change
   DOWNLOAD_DIR: '../downloads'        # Path to model and scalers
-  START_TIME: '2024-01-01T00:00:00Z'  # ISO 8601
+  START_TIME: '2026-01-01T00:00:00Z'  # ISO 8601
+  # START_TIME: '2019-09-13T04:00:00Z'  # Binance Futures launch
