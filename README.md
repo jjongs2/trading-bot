@@ -53,28 +53,37 @@ default:
 simulation:
   BUCKET_NAME: ''                     # No need to change
   DOWNLOAD_DIR: '../downloads'        # Path to model and scalers
-  START_TIME: '2024-02-12T00:00:00Z'  # ISO 8601
+  START_TIME: '2026-01-01T00:00:00Z'  # ISO 8601
 ```
 
-When setting `START_TIME`, please note that backtesting should be performed on data not used for model fitting to avoid overfitting.
+- When setting `START_TIME`, please note that backtesting should be performed on data not used for model fitting to avoid overfitting.
+- Make sure that `MODEL_KEY`, `SCALERS_KEY`, `DOWNLOAD_DIR` are set correctly so that the model and scalers can be loaded from the expected location.
 
 Now run the simulator.
 
 ```bash
-(env) user@host:~/trading-bot$ pip install -r requirements-local.txt
-(env) user@host:~/trading-bot$ export ENVIRONMENT=simulation
-(env) user@host:~/trading-bot$ cd src
-(env) user@host:~/trading-bot/src$ python simulator.py
+# Create a virtual environment
+cd ~/trading-bot
+python3.13 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip install --upgrade pip
+pip install -r requirements-local.txt
+
+# Run in simulation mode
+cd src
+ENVIRONMENT=simulation python3.13 simulator.py
 ```
 
 ```
 ---------------------------  ------
-           Number of trades      64
-                   Win rate   51.6%
-                  P&L ratio    1.72
-Max profit rate (per trade)    9.5%
-  Max loss rate (per trade)   -5.1%
-              Final balance  1524.2
+           Number of trades      49
+                   Win rate   55.1%
+                  P&L ratio    2.45
+Max profit rate (per trade)    8.8%
+  Max loss rate (per trade)   -4.5%
+              Final balance  1787.0
 ---------------------------  ------
 ```
 
