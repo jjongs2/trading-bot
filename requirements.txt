@@ -3,4 +3,4 @@ boto3-stubs[s3]==1.43.9
 ccxt==4.5.54
 pyyaml==6.0.3
 scikit-learn==1.8.0
-tensorflow==2.21.0
+tensorflow-cpu==2.21.0
